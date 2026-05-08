@@ -21,8 +21,9 @@ repositories {
 }
 
 dependencies {
+	implementation("com.cloudinary:cloudinary-http44:1.36.0")
 	implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	//implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
