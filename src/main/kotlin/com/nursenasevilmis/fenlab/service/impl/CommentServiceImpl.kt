@@ -61,8 +61,8 @@ class CommentServiceImpl(
 
     @Transactional
     override fun addComment(experimentId: Long, request: CommentCreateRequestDTO): CommentResponseDTO {
-       // val currentUserId = SecurityUtils.getCurrentUserId()
-        val currentUserId = 2L
+       val currentUserId = SecurityUtils.getCurrentUserId()
+
         val experiment = experimentRepository.findById(experimentId)
             .orElseThrow { ResourceNotFoundException("Deney bulunamadı: $experimentId") }
 
@@ -88,8 +88,8 @@ class CommentServiceImpl(
 
     @Transactional
     override fun updateComment(commentId: Long, request: CommentUpdateRequestDTO): CommentResponseDTO {
-        //val currentUserId = SecurityUtils.getCurrentUserId()
-        val currentUserId = 2L
+        val currentUserId = SecurityUtils.getCurrentUserId()
+
         val comment = commentRepository.findById(commentId)
             .orElseThrow { ResourceNotFoundException("Yorum bulunamadı: $commentId") }
 
@@ -109,8 +109,8 @@ class CommentServiceImpl(
 
     @Transactional
     override fun deleteComment(commentId: Long) {
-        //val currentUserId = SecurityUtils.getCurrentUserId()
-        val currentUserId = 2L
+        val currentUserId = SecurityUtils.getCurrentUserId()
+
         val comment = commentRepository.findById(commentId)
             .orElseThrow { ResourceNotFoundException("Yorum bulunamadı: $commentId") }
 
