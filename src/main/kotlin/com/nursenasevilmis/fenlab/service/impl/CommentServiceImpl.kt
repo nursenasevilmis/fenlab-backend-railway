@@ -114,8 +114,11 @@ class CommentServiceImpl(
         val comment = commentRepository.findById(commentId)
             .orElseThrow { ResourceNotFoundException("Yorum bulunamadı: $commentId") }
 
-        if (comment.user.id != currentUserId) {
-            throw ForbiddenException("Sadece kendi yorumunuzu silebilirsiniz")
+        val isCommentOwner = comment.user.id == currentUserId
+        val isExperimentOwner = comment.experiment.user.id == currentUserId
+
+        if (!isCommentOwner && !isExperimentOwner) {
+            throw ForbiddenException("Bu yorumu silme yetkiniz yok")
         }
 
         // Soft delete

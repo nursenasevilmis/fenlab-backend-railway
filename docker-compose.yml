@@ -52,6 +52,7 @@ services:
       MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      JWT_SECRET: fenlab-super-secret-key-minimum-32-character-2026
     ports:
       - "8080:8080"
     depends_on:
