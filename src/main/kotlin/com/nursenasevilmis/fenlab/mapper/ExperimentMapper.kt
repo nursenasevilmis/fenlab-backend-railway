@@ -7,6 +7,7 @@ import com.nursenasevilmis.fenlab.model.ExperimentMedia
 import com.nursenasevilmis.fenlab.model.ExperimentStep
 import com.nursenasevilmis.fenlab.model.enums.MediaType
 import com.nursenasevilmis.fenlab.repository.*
+import com.nursenasevilmis.fenlab.service.MinioService
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,7 +19,8 @@ class ExperimentMapper(
     private val favoriteRepository: FavoriteRepository,
     private val ratingRepository: RatingRepository,
     private val commentRepository: CommentRepository,
-    private val questionRepository: QuestionRepository
+    private val questionRepository: QuestionRepository,
+    private val minioService: MinioService,
 ) {
 
     fun toExperimentResponse(experiment: Experiment, currentUserId: Long?): ExperimentResponseDTO {
@@ -91,8 +93,8 @@ class ExperimentMapper(
             topic = experiment.topic,
             difficulty = experiment.difficulty,
             createdAt = experiment.createdAt,
-            thumbnailUrl = firstImage?.mediaUrl,
-            videoUrl = firstVideo?.mediaUrl,
+            thumbnailUrl = firstImage?.mediaUrl?.let { minioService.pathToUrl(it) },
+            videoUrl = firstVideo?.mediaUrl?.let { minioService.pathToUrl(it) },
             favoriteCount = favoriteCount,
             averageRating = averageRating,
             commentCount = commentCount,
