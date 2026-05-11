@@ -12,6 +12,10 @@ class FileUploadServiceImpl(
     private val minioService: MinioService
 ) : FileUploadService {
 
+    override fun getPublicFile(bucket: String, fileName: String): ByteArray {
+        return minioService.downloadFile(bucket, fileName).readBytes()
+    }
+
     override fun uploadVideo(file: MultipartFile): FileUploadResponseDTO {
         FileUtils.validateVideoFile(file)
 

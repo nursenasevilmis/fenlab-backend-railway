@@ -9,4 +9,5 @@ interface FileUploadService {
     fun uploadProfileImage(file: MultipartFile): FileUploadResponseDTO
     fun deleteVideo(videoUrl: String)
     fun deleteImage(imageUrl: String)
+    fun getPublicFile(bucket: String, fileName: String): ByteArray
 }

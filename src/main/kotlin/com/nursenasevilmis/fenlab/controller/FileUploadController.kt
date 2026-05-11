@@ -4,7 +4,9 @@ import com.nursenasevilmis.fenlab.dto.response.FileUploadResponseDTO
 import com.nursenasevilmis.fenlab.service.FileUploadService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -16,7 +18,26 @@ class FileUploadController(
     private val fileUploadService: FileUploadService
 ) {
 
+    @GetMapping("/public/{bucket}/{fileName:.+}")
+    fun getPublicFile(
+        @PathVariable bucket: String,
+        @PathVariable fileName: String
+    ): ResponseEntity<ByteArrayResource> {
+        val bytes = fileUploadService.getPublicFile(bucket, fileName)
 
+        val contentType = when {
+            fileName.endsWith(".png", true) -> "image/png"
+            fileName.endsWith(".jpg", true) || fileName.endsWith(".jpeg", true) -> "image/jpeg"
+            fileName.endsWith(".webp", true) -> "image/webp"
+            fileName.endsWith(".mp4", true) -> "video/mp4"
+            fileName.endsWith(".pdf", true) -> "application/pdf"
+            else -> "application/octet-stream"
+        }
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(ByteArrayResource(bytes))
+    }
     @Operation(summary = "Görsel yükle", description = "Bir görsel dosyasını yükler ve URL döner")
     @PostMapping("/upload/image")
     fun uploadImage(@RequestParam("file") file: MultipartFile): ResponseEntity<FileUploadResponseDTO> {
