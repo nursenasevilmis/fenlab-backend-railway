@@ -30,14 +30,17 @@ class MinioService(
                     .bucket(bucketName)
                     .build()
             )
+
             if (!found) {
                 minioClient.makeBucket(
                     MakeBucketArgs.builder()
                         .bucket(bucketName)
                         .build()
                 )
-                setBucketPolicy(bucketName)
             }
+
+            // ÖNEMLİ: Bucket önceden var olsa bile public read policy tekrar set edilsin
+            setBucketPolicy(bucketName)
         }
     }
 
