@@ -52,7 +52,57 @@ interface ExperimentRepository : JpaRepository<Experiment, Long> {
         pageable: Pageable
     ): Page<Experiment>
 
-    fun countByUserId(userId: Long): Long
+    // En Popüler: favori sayısına göre sırala
+    @Query("""
+        SELECT e FROM Experiment e 
+        WHERE e.isPublished = true 
+        AND e.isDeleted = false
+        AND (:subject IS NULL OR e.subject = :subject)
+        AND (:environment IS NULL OR e.environment = :environment)
+        AND (:difficulty IS NULL OR e.difficulty = :difficulty)
+        AND (:minGradeLevel IS NULL OR e.gradeLevel >= :minGradeLevel)
+        AND (:maxGradeLevel IS NULL OR e.gradeLevel <= :maxGradeLevel)
+        AND (CAST(:search AS string) IS NULL 
+             OR LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) 
+             OR LOWER(e.description) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
+             OR LOWER(e.topic) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))
+        ORDER BY (SELECT COUNT(f) FROM Favorite f WHERE f.experiment = e) DESC
+    """)
+    fun findByFiltersOrderByFavoriteCount(
+        @Param("subject")       subject: SubjectType?,
+        @Param("environment")   environment: EnvironmentType?,
+        @Param("minGradeLevel") minGradeLevel: Int?,
+        @Param("maxGradeLevel") maxGradeLevel: Int?,
+        @Param("difficulty")    difficulty: DifficultyLevel?,
+        @Param("search")        search: String?,
+        pageable: Pageable
+    ): Page<Experiment>
+
+    // En Beğenilen: ortalama puana göre sırala
+    @Query("""
+        SELECT e FROM Experiment e 
+        WHERE e.isPublished = true 
+        AND e.isDeleted = false
+        AND (:subject IS NULL OR e.subject = :subject)
+        AND (:environment IS NULL OR e.environment = :environment)
+        AND (:difficulty IS NULL OR e.difficulty = :difficulty)
+        AND (:minGradeLevel IS NULL OR e.gradeLevel >= :minGradeLevel)
+        AND (:maxGradeLevel IS NULL OR e.gradeLevel <= :maxGradeLevel)
+        AND (CAST(:search AS string) IS NULL 
+             OR LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) 
+             OR LOWER(e.description) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
+             OR LOWER(e.topic) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))
+        ORDER BY (SELECT COALESCE(AVG(r.rating), 0) FROM Rating r WHERE r.experiment = e) DESC
+    """)
+    fun findByFiltersOrderByAverageRating(
+        @Param("subject")       subject: SubjectType?,
+        @Param("environment")   environment: EnvironmentType?,
+        @Param("minGradeLevel") minGradeLevel: Int?,
+        @Param("maxGradeLevel") maxGradeLevel: Int?,
+        @Param("difficulty")    difficulty: DifficultyLevel?,
+        @Param("search")        search: String?,
+        pageable: Pageable
+    ): Page<Experiment>
 
     @Query("""
         SELECT DISTINCT e.subject FROM Experiment e 
@@ -61,4 +111,6 @@ interface ExperimentRepository : JpaRepository<Experiment, Long> {
         ORDER BY e.subject
     """)
     fun findAllSubjects(): List<SubjectType>
+
+    fun countByUserId(userId: Long): Long
 }

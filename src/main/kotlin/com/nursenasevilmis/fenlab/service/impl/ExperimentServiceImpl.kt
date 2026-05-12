@@ -33,23 +33,52 @@ class ExperimentServiceImpl(
 
 
     override fun getAllExperiments(filterRequest: ExperimentFilterRequestDTO): PaginatedResponseDTO<ExperimentSummaryResponseDTO> {
-        val sort = when (filterRequest.sortType) {
-            SortType.MOST_RECENT -> Sort.by(Sort.Direction.DESC, "createdAt")
-            SortType.OLDEST -> Sort.by(Sort.Direction.ASC, "createdAt")
-            SortType.HIGHEST_RATED, SortType.MOST_FAVORITED -> Sort.by(Sort.Direction.DESC, "createdAt")
+
+        // Favori sayısı ve puana göre sıralamalar özel sorgu gerektirir (subquery)
+        // Diğerleri standard Sort ile findByFilters kullanır
+        val page = when (filterRequest.sortType) {
+            SortType.MOST_FAVORITED -> {
+                val pageable = PaginationUtils.createPageable(filterRequest.page, filterRequest.size)
+                experimentRepository.findByFiltersOrderByFavoriteCount(
+                    subject       = filterRequest.subject,
+                    environment   = filterRequest.environment,
+                    minGradeLevel = filterRequest.minGradeLevel,
+                    maxGradeLevel = filterRequest.maxGradeLevel,
+                    difficulty    = filterRequest.difficulty,
+                    search        = filterRequest.search,
+                    pageable      = pageable
+                )
+            }
+            SortType.HIGHEST_RATED -> {
+                val pageable = PaginationUtils.createPageable(filterRequest.page, filterRequest.size)
+                experimentRepository.findByFiltersOrderByAverageRating(
+                    subject       = filterRequest.subject,
+                    environment   = filterRequest.environment,
+                    minGradeLevel = filterRequest.minGradeLevel,
+                    maxGradeLevel = filterRequest.maxGradeLevel,
+                    difficulty    = filterRequest.difficulty,
+                    search        = filterRequest.search,
+                    pageable      = pageable
+                )
+            }
+            else -> {
+                val sort = when (filterRequest.sortType) {
+                    SortType.MOST_RECENT -> Sort.by(Sort.Direction.DESC, "createdAt")
+                    SortType.OLDEST      -> Sort.by(Sort.Direction.ASC,  "createdAt")
+                    else                 -> Sort.by(Sort.Direction.DESC, "createdAt")
+                }
+                val pageable = PaginationUtils.createPageable(filterRequest.page, filterRequest.size, sort)
+                experimentRepository.findByFilters(
+                    subject       = filterRequest.subject,
+                    environment   = filterRequest.environment,
+                    minGradeLevel = filterRequest.minGradeLevel,
+                    maxGradeLevel = filterRequest.maxGradeLevel,
+                    difficulty    = filterRequest.difficulty,
+                    search        = filterRequest.search,
+                    pageable      = pageable
+                )
+            }
         }
-
-        val pageable = PaginationUtils.createPageable(filterRequest.page, filterRequest.size, sort)
-
-        val page = experimentRepository.findByFilters(
-            subject       = filterRequest.subject,
-            environment   = filterRequest.environment,
-            minGradeLevel = filterRequest.minGradeLevel,
-            maxGradeLevel = filterRequest.maxGradeLevel,
-            difficulty    = filterRequest.difficulty,
-            search        = filterRequest.search,
-            pageable      = pageable
-        )
 
         val currentUserId = try {
             SecurityUtils.getCurrentUserId()
